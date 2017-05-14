@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	buffer = 10000000
+	buffer = 10 * 1000 * 1000
 )
 
 // Translates a byte count into a human readable string
