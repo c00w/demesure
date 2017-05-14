@@ -9,6 +9,10 @@ import (
 	"time"
 )
 
+const (
+	buffer = 10000000
+)
+
 // Translates a byte count into a human readable string
 func PrintRateHuman(count int) string {
 	prefixes := []string{
@@ -44,7 +48,7 @@ func DoListen(addr string) {
 			continue
 		}
 
-		b := make([]byte, 10000)
+		b := make([]byte, buffer)
 		f := 0
 		for {
 			n, err := conn.Read(b[f:])
@@ -75,8 +79,8 @@ func DoSend(send string) {
 	}
 
 	count := 0
-	b := make([]byte, 10000)
-	f := 1000
+	b := make([]byte, buffer)
+	f := buffer
 	last := time.Now()
 	for i := 0; ; i++ {
 
@@ -108,6 +112,7 @@ func DoSend(send string) {
 }
 
 func DoIt(listen bool, send string) {
+	log.Print("Started Server")
 	go http.ListenAndServe(":8080", nil)
 	if listen {
 		DoListen(send)
