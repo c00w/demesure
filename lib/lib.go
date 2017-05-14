@@ -35,6 +35,29 @@ func PrintRateHuman(count int) string {
 
 }
 
+func HandleConnection(conn net.Conn) {
+	b := make([]byte, buffer)
+	f := 0
+	for {
+		n, err := conn.Read(b[f:])
+
+		if err != nil {
+			log.Print("Error Reading Data: ", err)
+			break
+		}
+
+		f += n
+
+		n, err = conn.Write(b[:f])
+		if err != nil {
+			log.Print("Error Writing Data: ", err)
+			break
+		}
+		f -= n
+
+	}
+}
+
 func DoListen(addr string) {
 	ln, err := net.Listen("tcp", addr)
 	if err != nil {
@@ -48,26 +71,8 @@ func DoListen(addr string) {
 			continue
 		}
 
-		b := make([]byte, buffer)
-		f := 0
-		for {
-			n, err := conn.Read(b[f:])
-
-			if err != nil {
-				log.Print("Error Reading Data: ", err)
-				break
-			}
-
-			f += n
-
-			n, err = conn.Write(b[:f])
-			if err != nil {
-				log.Print("Error Writing Data: ", err)
-				break
-			}
-			f -= n
-
-		}
+		log.Print("Handling Connection", conn.RemoteAddr().String())
+		go HandleConnection(conn)
 	}
 
 }
@@ -84,12 +89,14 @@ func DoSend(send string) {
 	last := time.Now()
 	for i := 0; ; i++ {
 
+		log.Print("sending")
 		n, err := conn.Write(b[:f])
 		if err != nil {
 			log.Print("Error Writing Data: ", err)
 			break
 		}
 		f -= n
+		log.Print("reading")
 		n, err = conn.Read(b[f:])
 
 		if err != nil {
