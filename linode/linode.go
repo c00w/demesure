@@ -271,6 +271,7 @@ func GetAllIPs() ([]*net.IPAddr, error) {
 
 	err = json.Unmarshal(output, resp)
 	if err != nil {
+		log.Print(string(output))
 		return nil, err
 	}
 

@@ -35,21 +35,31 @@ func PrintRateHuman(count int) string {
 
 }
 
+func IsTimeout(err error) bool {
+	e, ok := err.(net.Error)
+	if !ok {
+		return false
+	}
+	return e.Timeout()
+}
+
 func HandleConnection(conn net.Conn) {
 	b := make([]byte, buffer)
 	f := 0
 	for {
+		conn.SetDeadline(time.Now().Add(time.Second))
 		n, err := conn.Read(b[f:])
 
-		if err != nil {
+		if err != nil && IsTimeout(err) == false {
 			log.Print("Error Reading Data: ", err)
 			break
 		}
 
 		f += n
 
+		conn.SetDeadline(time.Now().Add(time.Second))
 		n, err = conn.Write(b[:f])
-		if err != nil {
+		if err != nil && IsTimeout(err) == false {
 			log.Print("Error Writing Data: ", err)
 			break
 		}
@@ -89,30 +99,29 @@ func DoSend(send string) {
 	last := time.Now()
 	for i := 0; ; i++ {
 
-		log.Print("sending")
+		conn.SetDeadline(time.Now().Add(time.Second))
 		n, err := conn.Write(b[:f])
-		if err != nil {
+		if err != nil && IsTimeout(err) == false {
 			log.Print("Error Writing Data: ", err)
 			break
 		}
 		f -= n
-		log.Print("reading")
+
+		conn.SetDeadline(time.Now().Add(time.Second))
 		n, err = conn.Read(b[f:])
 
-		if err != nil {
+		if err != nil && IsTimeout(err) == false {
 			log.Print("Error Reading Data: ", err)
 			break
 		}
 
 		f += n
 		count += n
-		if i%1000 == 0 {
-			test := time.Now()
-			if test.Sub(last) > time.Second {
-				log.Print("Bounced ", PrintRateHuman(count))
-				count = 0
-				last = test
-			}
+		test := time.Now()
+		if test.Sub(last) > time.Second {
+			log.Print("Bounced ", PrintRateHuman(count))
+			count = 0
+			last = test
 		}
 	}
 

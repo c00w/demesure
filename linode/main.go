@@ -25,7 +25,6 @@ func main() {
 				continue
 			}
 			log.Printf("Made linode %d in %v ", id, dc.Abbr)
-			break
 		}
 	case "DeleteAll":
 		linodes, err := ListLinodes()
@@ -60,6 +59,14 @@ func main() {
 		for _, i := range ips {
 			fmt.Print(i, ",")
 		}
+	case "Measure":
+		ips, err := GetAllIPs()
+		if err != nil {
+			log.Fatal(err)
+		}
+		for _, i := range ips {
+			fmt.Printf("demesure %s:8080\n", i)
+		}
 
 	case "Push":
 		ips, err := GetAllIPs()
@@ -67,11 +74,11 @@ func main() {
 			log.Fatal(err)
 		}
 		for _, i := range ips {
-			fmt.Printf("scp ~/gowork/bin/demesure root@%s:/root/demesure\n", i)
-			fmt.Printf("ssh root@%s localectl set-locale LANG=en_US.UTF-8\n", i)
-			fmt.Printf("ssh root@%s locale-gen\n", i)
-			fmt.Printf("ssh root@%s pacman -Sy --noconfirm tmux\n", i)
-			fmt.Printf("ssh root@%s tmux new-session -d -s demesure /root/demesure -listen :8080\n", i)
+			fmt.Printf("scp ~/gowork/bin/demesure root@%s:/root/demesure;\n", i)
+			fmt.Printf("ssh root@%s localectl set-locale LANG=en_US.UTF-8;\n", i)
+			fmt.Printf("ssh root@%s locale-gen;\n", i)
+			fmt.Printf("ssh root@%s pacman -Sy --noconfirm tmux;\n", i)
+			fmt.Printf("ssh root@%s tmux new-session -d -s demesure /root/demesure -listen :8080;\n", i)
 		}
 
 	default:
